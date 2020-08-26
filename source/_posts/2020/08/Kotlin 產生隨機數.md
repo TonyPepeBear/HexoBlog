@@ -1,5 +1,5 @@
 ---
-title: 產生隨機數
+title: Kotlin 產生隨機數
 date: 2020-08-26 03:47:49
 tags: 
     - kotlin
