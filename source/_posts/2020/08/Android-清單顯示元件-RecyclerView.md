@@ -8,7 +8,15 @@ tags:
     - view
 ---
 
-# Android 清單顯示元件 RecyclerView
+RecyclerView 是 Android 中用來顯示清單的元件，相比舊的 ListView 效率高上不少。
+
+<!-- more -->
+
+要使用 RecycelrView 需要另外創建兩個類別：
+
+1. Adapter
+2. ViewHolder
+
 
 ## RecyclerView 基本使用
 
