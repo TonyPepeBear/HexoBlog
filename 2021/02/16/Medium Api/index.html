@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.tonypepe.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="發布 Markdown 至 Medium我認為用 Markdown 用來寫技術文章還是最順手的，但是 Medium 的編輯器卻不支援 Markdown。前幾天用 import 的方式也失敗，另尋他處後發現 Medium 支援用 API 發布文章，更還支援用 Markdown 和 Html 發布。雖然不懂官方為何不直接讓用戶用 Markdown 發布，而是要用 API，但是竟然找到了一絲希望，就來試">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Medium Api">
+<meta property="og:url" content="https://blog.tonypepe.com/2021/02/16/Medium%20Api/index.html">
+<meta property="og:site_name" content="TonyPepe Blog">
+<meta property="og:description" content="發布 Markdown 至 Medium我認為用 Markdown 用來寫技術文章還是最順手的，但是 Medium 的編輯器卻不支援 Markdown。前幾天用 import 的方式也失敗，另尋他處後發現 Medium 支援用 API 發布文章，更還支援用 Markdown 和 Html 發布。雖然不懂官方為何不直接讓用戶用 Markdown 發布，而是要用 API，但是竟然找到了一絲希望，就來試">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://raw.githubusercontent.com/TonyPepeBear/ImageBed/main/2021/02/10-21-47-48-%E6%88%AA%E5%9C%96%202021-02-10%20%E4%B8%8B%E5%8D%889.47.40.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/TonyPepeBear/ImageBed/main/2021/02/10-01-42-07-%E6%88%AA%E5%9C%96%202021-02-10%20%E4%B8%8A%E5%8D%881.42.04.png">
+<meta property="article:published_time" content="2021-02-16T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-02-16T16:52:29.370Z">
+<meta property="article:author" content="TonyPepe">
+<meta property="article:tag" content="medium">
+<meta property="article:tag" content="markdown">
+<meta property="article:tag" content="api">
+<meta property="article:tag" content="kotlin">
+<meta property="article:tag" content="tornadofx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/TonyPepeBear/ImageBed/main/2021/02/10-21-47-48-%E6%88%AA%E5%9C%96%202021-02-10%20%E4%B8%8B%E5%8D%889.47.40.png">
+
+<link rel="canonical" href="https://blog.tonypepe.com/2021/02/16/Medium%20Api/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-TW'
+  };
+</script>
+
+  <title>Medium Api | TonyPepe Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">TonyPepe Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://blog.tonypepe.com/2021/02/16/Medium%20Api/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://www.gravatar.com/avatar/8dc1b7846d94b62f1e3042b777f41152?s=500">
+      <meta itemprop="name" content="TonyPepe">
+      <meta itemprop="description" content="Save My Note">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TonyPepe Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Medium Api
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">發表於</span>
+              
+
+              <time title="創建時間：2021-02-17 00:00:00 / 修改時間：00:52:29" itemprop="dateCreated datePublished" datetime="2021-02-17T00:00:00+08:00">2021-02-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="發布-Markdown-至-Medium"><a href="#發布-Markdown-至-Medium" class="headerlink" title="發布 Markdown 至 Medium"></a>發布 Markdown 至 Medium</h1><p>我認為用 Markdown 用來寫技術文章還是最順手的，但是 Medium 的編輯器卻不支援 Markdown。前幾天用 import 的方式也失敗，另尋他處後發現 Medium 支援用 API 發布文章，更還支援用 Markdown 和 Html 發布。雖然不懂官方為何不直接讓用戶用 Markdown 發布，而是要用 API，但是竟然找到了一絲希望，就來試試看用 API 的方式發布文章。</p>
+<a id="more"></a>
+
+<p>本篇使用 Kotlin 和 OKHttp，來嘗試撰寫一個應用程式，來協助發布 Markdwon 至 Medium，專案原始碼在 <a target="_blank" rel="noopener" href="https://github.com/TonyPepeBear/MediumMarkdownUploader">Github</a> 上。</p>
+<p><img src="https://raw.githubusercontent.com/TonyPepeBear/ImageBed/main/2021/02/10-21-47-48-%E6%88%AA%E5%9C%96%202021-02-10%20%E4%B8%8B%E5%8D%889.47.40.png" alt="截圖 2021-02-10 下午9.47.40.png"></p>
+<h2 id="申請-token"><a href="#申請-token" class="headerlink" title="申請 token"></a>申請 token</h2><p>Medium API 的 <a target="_blank" rel="noopener" href="https://github.com/Medium/medium-api-docs">官方文件</a> 在這，可以用 <code>HTTP POST</code> 的方式來發布文章。要使用 API 第一件事就是要有 <code>token</code>，要申請 <code>token</code> 不用錢，官方目前好像也沒有使用限制，到 <a target="_blank" rel="noopener" href="https://medium.com/me/settings">用戶設定</a> 的頁面，找到 <code>Integration tokens</code> 的地方，申請一個 token，說明隨便輸入就好。</p>
+<p><img src="https://raw.githubusercontent.com/TonyPepeBear/ImageBed/main/2021/02/10-01-42-07-%E6%88%AA%E5%9C%96%202021-02-10%20%E4%B8%8A%E5%8D%881.42.04.png"></p>
+<h2 id="UserID"><a href="#UserID" class="headerlink" title="UserID"></a>UserID</h2><p>根據官方文檔，想要發布文章，需要 UserID，我找了好久才發現 UserID 不是 Name 也不是 UserName，也是要先用 API 的方式取得。</p>
+<p>用 Http GET 的方式可以取得 token 主人資料，使用方式如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET https://api.medium.com/v1/me</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/v1/me</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: api.medium.com</span><br><span class="line"><span class="attribute">Authorization</span>: Bearer 181d415f34379af07b2c11d144dfbe35d</span><br><span class="line"><span class="attribute">Content-Type</span>: application/json</span><br><span class="line"><span class="attribute">Accept</span>: application/json</span><br><span class="line"><span class="attribute">Accept-Charset</span>: utf-8</span><br></pre></td></tr></table></figure>
+
+<p><code>token</code> 是放在 Post 的 header，的 <code>Authorization:Bearer</code> 後方，下方是用 Kotlin 和 OKHttp 實作的方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> request = Request.Builder()</span><br><span class="line">    .url(<span class="string">&quot;https://api.medium.com/v1/me&quot;</span>)</span><br><span class="line">    .<span class="keyword">get</span>()</span><br><span class="line">    .addHeader(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer <span class="variable">$token</span>&quot;</span>)</span><br><span class="line">    .build()</span><br><span class="line"><span class="keyword">val</span> response = client.newCall(request).execute()</span><br></pre></td></tr></table></figure>
+
+<p>範例的 Response 如下，可以拿到用 UserID、UserName 等資料：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;data&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;5303d74c64f66366f00cb9b2a94f3251bf5&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;username&quot;</span>: <span class="string">&quot;majelbstoat&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;Jamie Talbot&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;url&quot;</span>: <span class="string">&quot;https://medium.com/@majelbstoat&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;imageUrl&quot;</span>: <span class="string">&quot;https://images.medium.com/0*fkfQiTzT7TlUGGyI.png&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根據上方的 Json，可以產生 <code>Kotlin Data Class</code> 來放取回的資料：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">MediumApiMe</span></span>(</span><br><span class="line">    <span class="keyword">val</span> `<span class="keyword">data</span>`: MediumMeData</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">MediumMeData</span></span>(</span><br><span class="line">    <span class="keyword">val</span> id: String,</span><br><span class="line">    <span class="keyword">val</span> imageUrl: String,</span><br><span class="line">    <span class="keyword">val</span> name: String,</span><br><span class="line">    <span class="keyword">val</span> url: String,</span><br><span class="line">    <span class="keyword">val</span> username: String</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>取回的 Response 用 <code>gson</code> 轉換 json 到 Data Class，最後寫成一個完整的方法如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">getUserData</span><span class="params">(token: <span class="type">String</span>)</span></span>: MediumApiMe &#123;</span><br><span class="line">    <span class="keyword">val</span> request = Request.Builder()</span><br><span class="line">        .url(<span class="string">&quot;https://api.medium.com/v1/me&quot;</span>)</span><br><span class="line">        .<span class="keyword">get</span>()</span><br><span class="line">        .addHeader(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer <span class="variable">$token</span>&quot;</span>)</span><br><span class="line">        .build()</span><br><span class="line">    <span class="keyword">val</span> response = client.newCall(request).execute()</span><br><span class="line">    <span class="keyword">if</span> (response.code != <span class="number">200</span> || response.body == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> RuntimeException(</span><br><span class="line">            <span class="string">&quot;Can not get User info. Maybe token is wrong.&quot;</span> +</span><br><span class="line">            &#123;response.body?.byteStream()?.reader()?.readLines()&#125;</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> text = response.body!!.byteStream()</span><br><span class="line">        .reader()</span><br><span class="line">        .readText()</span><br><span class="line">    <span class="keyword">return</span> gson.fromJson(text, MediumApiMe::<span class="keyword">class</span>.java)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上方的程式碼有判斷 Response Code 是否為 200，若不是 200 代表取得資料沒有成功，就拋出 Exception。</p>
+<h2 id="Post-文章"><a href="#Post-文章" class="headerlink" title="Post 文章"></a>Post 文章</h2><p>取得 UserID 後就可以用 Http Post 的方式向 Medium 發布文章。下方的 authorId 就是剛剛用 Http Get 的方式取得的 UserID。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">POST https://api.medium.com/v1/users/&#123;&#123;authorId&#125;&#125;/posts</span><br></pre></td></tr></table></figure>
+
+<p>下面是 Post 的範例，<code>token</code> 一樣是放在 <code>header</code> 裡。官方的範例是用 html 來發布文章，我們只要將 <code>contentFormat</code> 改成 markdown 就可以達成目的。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/v1/users/5303d74c64f66366f00cb9b2a94f3251bf5/posts</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: api.medium.com</span><br><span class="line"><span class="attribute">Authorization</span>: Bearer 181d415f34379af07b2c11d144dfbe35d</span><br><span class="line"><span class="attribute">Content-Type</span>: application/json</span><br><span class="line"><span class="attribute">Accept</span>: application/json</span><br><span class="line"><span class="attribute">Accept-Charset</span>: utf-8</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;title&quot;: &quot;Liverpool FC&quot;,</span><br><span class="line">  &quot;contentFormat&quot;: &quot;html&quot;,</span><br><span class="line">  &quot;content&quot;: &quot;&lt;h1&gt;Liverpool FC&lt;/h1&gt;&lt;p&gt;You’ll never walk alone.&lt;/p&gt;&quot;,</span><br><span class="line">  &quot;canonicalUrl&quot;: &quot;http://jamietalbot.com/posts/liverpool-fc&quot;,</span><br><span class="line">  &quot;tags&quot;: [&quot;football&quot;, &quot;sport&quot;, &quot;Liverpool&quot;],</span><br><span class="line">  &quot;publishStatus&quot;: &quot;public&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根據上面 Post 的 Json 範例，我們可以產生出如下的 Kotlin Data Class，我順便寫了一個快速轉成 Json 的方法：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">MediumApiPost</span></span>(</span><br><span class="line">    <span class="keyword">val</span> title: String,</span><br><span class="line">    <span class="keyword">val</span> content: String,</span><br><span class="line">    <span class="keyword">val</span> contentFormat: String,</span><br><span class="line">    <span class="keyword">val</span> tags: List&lt;String&gt; = listOf(),</span><br><span class="line">    <span class="keyword">val</span> publishStatus: String = <span class="string">&quot;draft&quot;</span>, <span class="comment">//預設是草稿</span></span><br><span class="line">    <span class="keyword">val</span> canonicalUrl: String = <span class="string">&quot;&quot;</span>,</span><br><span class="line">) &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">toJson</span><span class="params">()</span></span>: String &#123;</span><br><span class="line">        <span class="keyword">return</span> gson.toJson(<span class="keyword">this</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>產生出 Data Class 就可以嘗試 Post 看看，是否會發布文章，直接利用剛剛寫好的 <code>getUserData</code> 拿到 UserID，之後在 Post：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> userID = getUserData(token).<span class="keyword">data</span>.id</span><br><span class="line"><span class="keyword">val</span> medimuApiPost = </span><br><span class="line">    MdieumApiPost(<span class="string">&quot;Title&quot;</span>, <span class="string">&quot;# Title\nHi&quot;</span>, <span class="string">&quot;markdown&quot;</span>)</span><br><span class="line"><span class="keyword">val</span> request = Request.Builder()</span><br><span class="line">    .url(<span class="string">&quot;https://api.medium.com/v1/users/<span class="variable">$userID</span>/posts&quot;</span>)</span><br><span class="line">    .post(mediumApiPost.toJson().toRequestBody(contentType = <span class="string">&quot;application/json&quot;</span>.toMediaType()))</span><br><span class="line">    .addHeader(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer <span class="variable">$token</span>&quot;</span>)</span><br><span class="line">    .build()</span><br><span class="line"><span class="keyword">val</span> response = client.newCall(request).execute()</span><br></pre></td></tr></table></figure>
+
+<p>如果發布成功，可以拿到 Response Code 201，其他的都代表發布失敗。</p>
+<p>寫成完整的發布方法如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">newPost</span><span class="params">(token: <span class="type">String</span>, mediumApiPost: <span class="type">MediumApiPost</span>)</span></span>: String &#123;</span><br><span class="line">    <span class="keyword">val</span> userID = getUserData(token).<span class="keyword">data</span>.id</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> request = Request.Builder()</span><br><span class="line">        .url(<span class="string">&quot;https://api.medium.com/v1/users/<span class="variable">$userID</span>/posts&quot;</span>)</span><br><span class="line">        .post(mediumApiPost.toJson().toRequestBody(contentType = <span class="string">&quot;application/json&quot;</span>.toMediaType()))</span><br><span class="line">        .addHeader(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer <span class="variable">$token</span>&quot;</span>)</span><br><span class="line">        .build()</span><br><span class="line">    <span class="keyword">val</span> response = client.newCall(request).execute()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (response.code != <span class="number">201</span> || response.body == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> RuntimeException(<span class="string">&quot;Something Wrong. <span class="subst">$&#123;response.body?.byteStream()?.reader()?.readText()&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> text = response.body!!.byteStream().reader().readText()</span><br><span class="line">    println(text)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> json = gson.fromJson(text, MediumNewPostResponse::<span class="keyword">class</span>.java)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> json.<span class="keyword">data</span>.url</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的方法會直接回傳發布成功的 URL，失敗則會直接拋出 Exception。</p>
+<h2 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h2><p>寫好方法後，最後再用 <code>TornadoFX</code> 寫 GUI，這邊就不講述 GUI 的部分，有興趣可以自己到 GitHub 上看專案的原始碼。</p>
+<h2 id="程式碼區塊"><a href="#程式碼區塊" class="headerlink" title="程式碼區塊"></a>程式碼區塊</h2><p>因為 Medium 目前並不支援程式碼高亮，傳上去的程式碼區塊都會變成黑底的，目前我有想到的解法是在 Post 上去之前，就先將程式碼區塊都換成 GitHub Gist，但這就需要更複雜的方式解決問題了，有興趣的人可以自己試試看。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a target="_blank" rel="noopener" href="https://github.com/Medium/medium-api-docs">Medium’s API Documentation</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/medium/" rel="tag"># medium</a>
+              <a href="/tags/markdown/" rel="tag"># markdown</a>
+              <a href="/tags/api/" rel="tag"># api</a>
+              <a href="/tags/kotlin/" rel="tag"># kotlin</a>
+              <a href="/tags/tornadofx/" rel="tag"># tornadofx</a>
+          </div>
+
+        
+
+
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%99%BC%E5%B8%83-Markdown-%E8%87%B3-Medium"><span class="nav-number">1.</span> <span class="nav-text">發布 Markdown 至 Medium</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%B3%E8%AB%8B-token"><span class="nav-number">1.1.</span> <span class="nav-text">申請 token</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UserID"><span class="nav-number">1.2.</span> <span class="nav-text">UserID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Post-%E6%96%87%E7%AB%A0"><span class="nav-number">1.3.</span> <span class="nav-text">Post 文章</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GUI"><span class="nav-number">1.4.</span> <span class="nav-text">GUI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BC%8F%E7%A2%BC%E5%8D%80%E5%A1%8A"><span class="nav-number">1.5.</span> <span class="nav-text">程式碼區塊</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">1.6.</span> <span class="nav-text">Reference</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="TonyPepe"
+      src="https://www.gravatar.com/avatar/8dc1b7846d94b62f1e3042b777f41152?s=500">
+  <p class="site-author-name" itemprop="name">TonyPepe</p>
+  <div class="site-description" itemprop="description">Save My Note</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TonyPepeBear" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TonyPepeBear" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">TonyPepe</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
